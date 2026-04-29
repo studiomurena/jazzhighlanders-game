@@ -1,55 +1,44 @@
-const config = {
-    type: Phaser.AUTO,
-    width: 640,
-    height: 360,
-    pixelArt: true,
-    physics: {
-        default: 'arcade',
-        arcade: {
-            gravity: { y: 0 }, 
-            debug: false 
-        }
-    },
-    scene: {
-        preload: preload,
-        create: create,
-        update: update
-    }
-};
-
-const game = new Phaser.Game(config);
-
-let ferraz;
-let cursors;
-let sfondo;
-let pavimento;
-
 function preload() {
     this.load.image('muro', 'assets/images/background_muro.png');
     this.load.image('pavimento', 'assets/images/pavimento.png');
     
-    // ASSICURATI CHE QUESTE DIMENSIONI SIANO QUELLE REALI DEL SINGOLO FRAME!
+    // Carichiamo anche i nuovi elementi! 
+    // Per ora li carichiamo come "image" semplice per fare scena velocemente
+    this.load.image('folla', 'assets/images/folla_sprites.png');
+    this.load.image('props', 'assets/images/props_sprites.png');
+
     this.load.spritesheet('ferraz_idle', 'assets/images/ferraz_idle.png', { frameWidth: 64, frameHeight: 64 });
-    // Aggiungiamo anche la camminata (assicurati di caricare il file su GitHub!)
     this.load.spritesheet('ferraz_walk', 'assets/images/ferraz_walk.png', { frameWidth: 64, frameHeight: 64 });
 }
 
 function create() {
-    // Rendiamo il "mondo" del gioco più lungo dello schermo (es. largo 1280 pixel)
     this.physics.world.setBounds(0, 0, 1280, 360);
 
-    // Mettiamo lo sfondo e il pavimento a partire da x=0. 
-    // Ora li facciamo larghi 1280 per coprire tutto il livello!
+    // LIVELLO 0: Il Muro (Sfondo lontanissimo)
     sfondo = this.add.tileSprite(0, 180, 1280, 360, 'muro').setOrigin(0, 0.5);
+    sfondo.setDepth(0);
+
+    // LIVELLO 1: La Folla (Appoggiata al muro, dietro l'azione)
+    // Aggiungiamo un paio di gruppetti di persone sparsi per il locale
+    this.add.image(200, 230, 'folla').setDepth(1);
+    this.add.image(800, 230, 'folla').setDepth(1);
+
+    // LIVELLO 2: Il Pavimento
     pavimento = this.add.tileSprite(0, 328, 1280, 64, 'pavimento').setOrigin(0, 0.5);
-    
+    pavimento.setDepth(2);
     this.physics.add.existing(pavimento, true); 
 
-    // Ferraz nasce a sinistra
+    // LIVELLO 3: I Personaggi (Ferraz)
     ferraz = this.physics.add.sprite(100, 260, 'ferraz_idle');
+    ferraz.setDepth(3); // Ferraz è a livello 3, quindi copre la folla ma sta sul pavimento
     ferraz.setCollideWorldBounds(true);
 
-    // Animazione IDLE
+    // LIVELLO 4: I Props (In primissimo piano, davanti a tutti)
+    // Mettiamo le casse e i cavi davanti ai piedi di Ferraz
+    this.add.image(400, 310, 'props').setDepth(4);
+    this.add.image(1000, 310, 'props').setDepth(4);
+
+    // Animazioni
     this.anims.create({
         key: 'idle',
         frames: this.anims.generateFrameNumbers('ferraz_idle', { start: 0, end: 3 }), 
@@ -57,39 +46,15 @@ function create() {
         repeat: -1
     });
 
-    // Animazione WALK (Camminata)
     this.anims.create({
         key: 'walk',
-        frames: this.anims.generateFrameNumbers('ferraz_walk', { start: 0, end: 3 }), // Cambia 'end' in base a quante pose di camminata hai
+        frames: this.anims.generateFrameNumbers('ferraz_walk', { start: 0, end: 3 }), 
         frameRate: 10,
         repeat: -1
     });
 
-    // Sblocchiamo la telecamera: ora seguirà Ferraz!
     this.cameras.main.setBounds(0, 0, 1280, 360);
     this.cameras.main.startFollow(ferraz);
 
     cursors = this.input.keyboard.createCursorKeys();
-}
-
-function update() {
-    // AZZERIAMO LA VELOCITÀ OGNI FRAME
-    ferraz.setVelocityX(0);
-
-    // MOVIMENTO A SINISTRA
-    if (cursors.left.isDown) {
-        ferraz.setVelocityX(-160); // Velocità di camminata
-        ferraz.anims.play('walk', true); // Fa partire l'animazione
-        ferraz.setFlipX(true); // Gira l'immagine di Ferraz verso sinistra
-    }
-    // MOVIMENTO A DESTRA
-    else if (cursors.right.isDown) {
-        ferraz.setVelocityX(160);
-        ferraz.anims.play('walk', true);
-        ferraz.setFlipX(false); // Gira l'immagine di Ferraz verso destra
-    }
-    // FERMO
-    else {
-        ferraz.anims.play('idle', true);
-    }
 }
