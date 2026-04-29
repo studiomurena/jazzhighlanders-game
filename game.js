@@ -16,7 +16,7 @@ const game = new Phaser.Game(config);
 let party = []; // Questo è il nostro "trenino" di eroi
 let history = []; // L'array che registra le "briciole di pane" (le posizioni passate)
 const HISTORY_DELAY = 15; // Distanza tra un personaggio e l'altro (in fotogrammi)
-let nomiEroi = ['carma', 'ferraz', 'mauri', 'ame', 'falcon']; // L'ordine del party
+let nomiEroi = ['carma', 'ferraz', 'mauri', 'nan', 'falcon']; // L'ordine del party
 
 let nacho;
 let cursors;
