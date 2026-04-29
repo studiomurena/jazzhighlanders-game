@@ -1,9 +1,33 @@
+// CONFIGURAZIONE BASE DEL GIOCO
+const config = {
+    type: Phaser.AUTO,
+    width: 640,
+    height: 360,
+    pixelArt: true,
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { y: 0 }, 
+            debug: false 
+        }
+    },
+    scene: {
+        preload: preload,
+        create: create,
+        update: update
+    }
+};
+
+const game = new Phaser.Game(config);
+
+let ferraz;
+let cursors;
+let sfondo;
+let pavimento;
+
 function preload() {
     this.load.image('muro', 'assets/images/background_muro.png');
     this.load.image('pavimento', 'assets/images/pavimento.png');
-    
-    // Carichiamo anche i nuovi elementi! 
-    // Per ora li carichiamo come "image" semplice per fare scena velocemente
     this.load.image('folla', 'assets/images/folla_sprites.png');
     this.load.image('props', 'assets/images/props_sprites.png');
 
@@ -14,27 +38,25 @@ function preload() {
 function create() {
     this.physics.world.setBounds(0, 0, 1280, 360);
 
-    // LIVELLO 0: Il Muro (Sfondo lontanissimo)
+    // LIVELLO 0
     sfondo = this.add.tileSprite(0, 180, 1280, 360, 'muro').setOrigin(0, 0.5);
     sfondo.setDepth(0);
 
-    // LIVELLO 1: La Folla (Appoggiata al muro, dietro l'azione)
-    // Aggiungiamo un paio di gruppetti di persone sparsi per il locale
+    // LIVELLO 1
     this.add.image(200, 230, 'folla').setDepth(1);
     this.add.image(800, 230, 'folla').setDepth(1);
 
-    // LIVELLO 2: Il Pavimento
+    // LIVELLO 2
     pavimento = this.add.tileSprite(0, 328, 1280, 64, 'pavimento').setOrigin(0, 0.5);
     pavimento.setDepth(2);
     this.physics.add.existing(pavimento, true); 
 
-    // LIVELLO 3: I Personaggi (Ferraz)
+    // LIVELLO 3
     ferraz = this.physics.add.sprite(100, 260, 'ferraz_idle');
-    ferraz.setDepth(3); // Ferraz è a livello 3, quindi copre la folla ma sta sul pavimento
+    ferraz.setDepth(3); 
     ferraz.setCollideWorldBounds(true);
 
-    // LIVELLO 4: I Props (In primissimo piano, davanti a tutti)
-    // Mettiamo le casse e i cavi davanti ai piedi di Ferraz
+    // LIVELLO 4
     this.add.image(400, 310, 'props').setDepth(4);
     this.add.image(1000, 310, 'props').setDepth(4);
 
@@ -57,4 +79,22 @@ function create() {
     this.cameras.main.startFollow(ferraz);
 
     cursors = this.input.keyboard.createCursorKeys();
+}
+
+function update() {
+    ferraz.setVelocityX(0);
+
+    if (cursors.left.isDown) {
+        ferraz.setVelocityX(-160); 
+        ferraz.anims.play('walk', true); 
+        ferraz.setFlipX(true); 
+    }
+    else if (cursors.right.isDown) {
+        ferraz.setVelocityX(160);
+        ferraz.anims.play('walk', true);
+        ferraz.setFlipX(false); 
+    }
+    else {
+        ferraz.anims.play('idle', true);
+    }
 }
